@@ -1,0 +1,41 @@
+
+body {
+	background: url("css_images/clouds-optimize.gif");
+	background-size: cover;
+}
+
+.wrapper {
+	max-width:700px;
+}
+
+.blue1 {
+	background-color: #abe;
+	opacity: .9;
+}
+
+.green1 {
+	background-color: #ded;
+}
+
+.green-light{
+	background-color: #efffef;
+}
+
+.earthy {
+	background-color: #babbcc;
+}
+
+.match-result{
+	font-family:Futura; 
+	padding:10px;
+	margin-top:20px;
+	width:400px;
+}
+
+.positive{
+	background-color:#ddeedd;
+}
+
+.negative{
+	background-color: #bebeed;
+}

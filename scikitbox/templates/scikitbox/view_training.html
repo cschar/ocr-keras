@@ -1,0 +1,16 @@
+{% load staticfiles %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'scikitbox/main.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'scikitbox/bootstrap.css' %}" />
+
+<div class="container-fluid wrapper">
+
+	<div class="row blue1">
+		<h4> Viewing {{count}} {{type}} training images </h4>
+		<div style="display:block">
+				{% for image in images %}
+					<img src={{image}} height='50' width='50' >
+				{% endfor %}
+		</div>
+	</div>
+</div>

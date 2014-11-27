@@ -1,0 +1,77 @@
+{% load staticfiles %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'scikitbox/main.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'scikitbox/bootstrap.css' %}" />
+
+<div class="container-fluid wrapper">
+
+<div class="row blue1">
+	<div class="col-xs-12">	
+		<h4> Test Gallery </h4>
+
+		<div style="display:block">
+		{% for image_url in test_images %}
+			<img src={{image_url}} height='50' width='50' >
+		{% endfor %}
+		</div>
+		<form action="/box/uploadSingle" method="post" enctype="multipart/form-data">
+		    Select a file: <input type="file" name="upload" /><br/>
+		    <input type="submit" value="upload to gallery" />
+		</form>
+		<a href="/box/clearTest"> clear test gallery </a>
+			
+	</div>
+ </div> <!-- end row -->
+
+ <div class="row green1">
+	<div class="col-md-7">	
+		<h4> Collect training data </h4>
+		
+		<form action='/box/setupTraining' method="POST">
+		  Collect Images with keywords : <input type="text" name="training_keywords" />
+		  <br/>
+		  <input type="radio" name="classifier" value="positive" checked>Pos<br>
+		<input type="radio" name="classifier" value="negative">Neg <br>
+
+		  <input type="submit" value="collect!" />
+		</form>
+	</div>
+	<div class="col-md-5">
+		<div> <h4> Pos collected :  {{pos_image_count}} </h4> 
+			<a href="/box/viewPositive"> view pos</a> <br/>
+			<a href="/box/clearPositive"> clear pos</a>
+		</div>
+		<div> <h4> Neg collected : {{neg_image_count}} </h4> 
+			<a href="/box/viewNegative"> view neg</a> <br/>
+			<a href="/box/clearPositive"> clear neg</a>
+		</div>
+	</div>	
+ </div> <!-- end row -->
+
+ <div class="row green-light">
+	<div class="col-xs-12">	
+		<h4> Normalize the data </h4>
+		
+		<form action='/box/normalizeTraining' method="POST">
+		  <p>This will resize all data to a standard 100x100 pixel image. reduce it to a grayscale image, and then apply an edge filter.
+		  The result is a feature set of size 10000 with each feature having a value of 0-255. </p>
+		  <input type="submit" value="normalize" />
+		</form>
+	</div>
+	
+ </div> <!-- end row -->
+
+ <div class="row earthy">
+	<div class="col-xs-12">	
+		<h4> Match test gallery against training data </h4>
+		
+		<form action='/box/matchTestGallery' method="POST">
+		  
+		  <input type="submit" value="Match" />
+		</form>
+	</div>
+	
+ </div> <!-- end row -->
+
+
+</div> <!-- end container -->

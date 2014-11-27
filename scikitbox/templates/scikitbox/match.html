@@ -1,0 +1,20 @@
+{% load staticfiles %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'scikitbox/main.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'scikitbox/bootstrap.css' %}" />
+
+<div class="container-fluid wrapper">
+	{% for result in image_clf_results %}
+	{% if result.clf_result == "positive" %}
+		<div class="match-result positive">	
+	{% else %}
+		<div class="match-result negative">	
+	{% endif %}
+		Normalized/Original: 
+		<img src={{result.test_url}} align='right' width='100' height='100'>
+		<img src={{result.normalized_url}} align='right' width='100' height='100'>
+		<br/>
+		Image classified as <h2>  {{result.clf_result}}</h2> with distance to hyperplane of {{result.clf_distance}}
+	</div>
+	{% endfor %}
+</div>
