@@ -5,6 +5,8 @@ A django app running on heroku that provides a simple interface
 for a user to collect image training data, and upload images to 
 test against that training data.
 
+deployed here for testing: https://thawing-springs-8648.herokuapp.com/
+
 ## Deploy to Heroku
 Clone and add to git
 ```sh
