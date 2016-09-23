@@ -1,5 +1,8 @@
 # Django scikit-learn app for svm module
 
+great chart for scikit-learn: 
+http://www.datasciencecentral.com/profiles/blogs/the-making-of-a-cheatsheet-emoji-edition
+
 
 A django app running on heroku that provides a simple interface
 for a user to collect image training data, and upload images to 
@@ -43,7 +46,7 @@ Install requirements into a virtualenv:
 Locally:
 
 ```sh
-  $ python app.py      # Use default 8080 port
+  $ python manage.py runserver      # Use default 8080 port
 ```
 
 Open browser at `http://0.0.0.0:8080`
