@@ -1,5 +1,5 @@
 """
-Django settings for heroku-django project.
+Django settings for heroku_django project.
 
 For more information on this file, see
 https://docs.djangoproject.com/en/1.7/topics/settings/
@@ -49,9 +49,9 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
-ROOT_URLCONF = 'heroku-django.urls'
+ROOT_URLCONF = 'heroku_django.urls'
 
-WSGI_APPLICATION = 'heroku-django.wsgi.application'
+WSGI_APPLICATION = 'heroku_django.wsgi.application'
 
 
 # Database

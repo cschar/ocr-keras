@@ -1,9 +1,10 @@
 
-import sys,os,json,urllib2, requests
+import sys,os,json,urllib2, requests, random
 
 
 
-def fetch_image_json(image_string, image_size="medium", API_KEY=None):
+
+def fetch_image_json(image_string, image_size="medium", start_index=1, API_KEY=None):
 	''' Query the google image api with an image string and return 
 	the resulting json data'''
 	API_KEY = os.environ['API_KEY'] if not API_KEY else API_KEY
@@ -11,12 +12,11 @@ def fetch_image_json(image_string, image_size="medium", API_KEY=None):
 	url = ('https://www.googleapis.com/customsearch/v1?' +
 	'q={search_query}&cx=001996507256426061711%3Azxscobp2hsm&fileType=jpg' +
 	'&imgSize={image_size}&searchType=image' +
-	'&key={API_KEY}').format(search_query=image_string, image_size=image_size, API_KEY=API_KEY)
+	'&start={start_index}' +
+	'&key={API_KEY}').format(search_query=image_string,
+	 image_size=image_size,  start_index=start_index,
+	 API_KEY=API_KEY)
 	
-	# deprecated :(
-	# url = ('https://ajax.googleapis.com/ajax/services/search/images?' + \
- #       'v=1.0&q='+GET_string+'&userip='+user_ip+'&start='+str(start_page)) + \
-	# '&rsz='+str(result_size)+'&imgsz='+image_size
 
 	response = requests.get(url)
 
@@ -61,11 +61,15 @@ def write_files(urls,directory="images/"):
 	return count
 
 def fetch_urls(search_text):
-	'''fetch medium and small images for double the results'''
 	fetched_img_urls = []
 
-	json = fetch_image_json(search_text,image_size="medium")
-	fetched_img_urls += parse_images_urls(json)
+	for i in range(1,6):
+		for size in ['large','medium']:
+			json = fetch_image_json(search_text,image_size=size, start_index=i)
+			fetched_img_urls.append(parse_images_urls(json))
+	
+
+	return fetched_img_urls 
 
 
 def main():

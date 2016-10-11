@@ -1,1 +1,1 @@
-web: gunicorn heroku-django.wsgi --log-file -
+web: gunicorn heroku_django.wsgi --log-file -
