@@ -6,11 +6,12 @@
 <div class="container-fluid wrapper">
 
 	<div class="row blue1">
-		<h4> Viewing {{count}} {{type}} training images </h4>
+		<h4> Viewing {{count}} {{type}} images </h4>
 		<div style="display:block">
-				{% for image in images %}
-					<img src={{image}} height='50' width='50' >
-				{% endfor %}
+            {% for image in images %}
+                <img src={{image}} height='50' width='50' >
+            {% endfor %}
 		</div>
+        <a href="{% url "index" %}"> Back </a>
 	</div>
 </div>

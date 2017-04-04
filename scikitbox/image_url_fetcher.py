@@ -1,14 +1,20 @@
 
-import sys,os,json,urllib2, requests, random
+import sys,os,json,shutil, requests, random
+
+import logging
 
 
+logger = logging.getLogger(__name__)
 
+
+class CheapAPILimitExceededException(Exception):
+	pass
 
 def fetch_image_json(image_string, image_size="medium", start_index=1, API_KEY=None):
 	''' Query the google image api with an image string and return 
 	the resulting json data'''
-	API_KEY = os.environ['API_KEY'] if not API_KEY else API_KEY
-	GET_string = "+".join(image_string.split(" "))
+	API_KEY = os.environ['GOOGLE_CUSTOM_SEARCH_API_KEY'] if not API_KEY else API_KEY
+	image_string = "+".join(image_string.split(" "))
 	url = ('https://www.googleapis.com/customsearch/v1?' +
 	'q={search_query}&cx=001996507256426061711%3Azxscobp2hsm&fileType=jpg' +
 	'&imgSize={image_size}&searchType=image' +
@@ -18,9 +24,11 @@ def fetch_image_json(image_string, image_size="medium", start_index=1, API_KEY=N
 	 API_KEY=API_KEY)
 	
 
-	response = requests.get(url)
-
-	return response.json()
+	image_json = requests.get(url).json()
+	if image_json.get('error'):
+	# if image_json['error']['errors'][0]['domain'] == 'usageLimits':
+		raise CheapAPILimitExceededException
+	return image_json
 
 def parse_images_urls(json_results):
 	'''Parse the json for the image urls we want'''
@@ -43,49 +51,50 @@ def write_files(urls,directory="images/"):
 		url = url.split('?',1)[0]
 		try:
 			filetype = url[-4:]
-			if url[-4:] in accepted_extensions or cleaned_url in accepted_extensions:
+			if url[-4:] in accepted_extensions:
 
-				name = "iuf_"+url[7:30].replace("/","") + str(count) + filetype
-				url_image = urllib2.urlopen(url,timeout=url_timeout).read()
-				fd = open(directory+name,'wb')
-				fd.write(url_image)
-				fd.close()
+				file_path = directory+"iuf_"+url[7:30].replace("/","") + str(count) + filetype
+				
+				response = requests.get(url, stream=True)
+				with open(file_path, 'wb') as out_file:
+				    shutil.copyfileobj(response.raw, out_file)
+				del response
+
 				count += 1
-				print 'wrote to' + name
+				logger.debug('wrote to: ' + file_path)
 			else:
-				print 'skipping {}'.format(url)
-		except urllib2.HTTPError as e:
-			print e
-		except urllib2.URLError as e2:
-			print e2
+				logger.debug('skipping {}'.format(url))
+		except Exception as e:
+			logger.debug(e)
 	return count
 
 def fetch_urls(search_text):
-	fetched_img_urls = []
+	urls = []
 
 	for i in range(1,6):
-		for size in ['large','medium']:
+		# for size in ['large','medium']:
+		for size in ['medium']:
 			json = fetch_image_json(search_text,image_size=size, start_index=i)
-			fetched_img_urls.append(parse_images_urls(json))
+			urls += parse_images_urls(json)
 	
 
-	return fetched_img_urls 
+	return urls
 
 
 def main():
+	logger.debug = print # redirect to stdout
 	if len(sys.argv) > 1:
 		image_query = " ".join(sys.argv[1:])
 	else:
 		image_query = 'red grapes'
-	import random
 	total = 0
-	
 	json = fetch_image_json(image_query)
 	urls = parse_images_urls(json)
-	print 'fetched %s' % urls
+	print('fetched %s' % urls)
 	total = write_files(urls)
 
-	print "\n Done: wrote %s image files" % (total)
+	print("\n Done: wrote %s image files" % (total))
+
 
 if __name__ == '__main__':
 	main()

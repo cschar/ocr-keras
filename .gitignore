@@ -4,3 +4,6 @@ venv
 staticfiles
 *.jpg
 *.png
+
+#pycharm
+.idea

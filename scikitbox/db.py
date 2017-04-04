@@ -7,7 +7,7 @@ class MongoBot():
 		self.client = pymongo.MongoClient(
 			"mongodb://"+db_user+":"+db_pass+"@dogen.mongohq.com/"+\
 			db_name, 10036)
-		print 'mongobot client created'
+		print('mongobot client created')
 		self.db = self.client[db_name]
 		self.images = self.db.images
 
@@ -25,7 +25,6 @@ class MongoBot():
 				"binary": binary_data
 				})
 		except IOError as e:
-			print e
 			return saved
 
 		saved = 1
@@ -55,6 +54,6 @@ if __name__ == "__main__":
 
 	mb.save_image("./images/spinning_cylinders.jpg","positive_car")
 	for i in mb.get_imagetypes("positive_car"):
-		print i["_id"]
+		print(i["_id"])
 	
 
