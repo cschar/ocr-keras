@@ -5,5 +5,8 @@ staticfiles
 *.jpg
 *.png
 
+#logs
+heroku_django
+
 #pycharm
 .idea

@@ -7,9 +7,15 @@ import numpy as np
 from glob import glob
 import unittest,os,time
 # from skimage import feature
-from urllib import request as urllib2
+try:
+    from urllib import request as urllib2
+except:
+    import urllib2
 
-import scikitbox.db
+try:
+    import scikitbox.db
+except:
+    import db
 
 def get_rgb_feature_list(pil_image):
     '''ignore alpha channel if present'''

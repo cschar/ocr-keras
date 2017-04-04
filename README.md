@@ -1,27 +1,19 @@
-# Django scikit-learn app for svm module
+# Django scikit-learn test app
 
 great chart for scikit-learn: 
 http://www.datasciencecentral.com/profiles/blogs/the-making-of-a-cheatsheet-emoji-edition
 
-
-A django app running on heroku that provides a simple interface
-for a user to collect image training data, and upload images to 
-test against that training data.
+Makes use of the google custom search image api to collect meak training data.
+Then passes it to a SVM classifier which stupidly tries to then detect whether
+the test images belong in the positive or negative images featureset camps.
 
 deployed here for testing: https://thawing-springs-8648.herokuapp.com/
 
-## Deploy to Heroku
-Clone and add to git
-```sh
-  $ git clone git@github.com:cclay/django-scikit-app.git
-  $ git init
-  $ git add .
-  $ git commit -m "init"
-```
+
 Specify custom buildpack and push to heroku
 ```sh
   $ heroku login
-  $ heroku config:set BUILDPACK_URL=https://github.com/dbrgn/heroku-buildpack-python-sklearn/
+  $ heroku config:set BUILDPACK_URL=https://github.com/kennethreitz/conda-buildpack
   $ git push heroku master
   $ heroku open     # Open the app in the browser
 ```
@@ -35,9 +27,10 @@ Specify custom buildpack and push to heroku
 Install requirements into a virtualenv:
 
 ```sh
-  $ virtualenv env
-  $ source env/bin/activate
+  $ conda create --name my_snakes_env python=3  #(or 2)
+  $ source activate my_snakes_env
   $ pip install -r requirements.txt
+  $ pip install -r conda-requirements.txt
   $ deactivate # Stop virtualenv when you are done
 ```
 
@@ -46,10 +39,10 @@ Install requirements into a virtualenv:
 Locally:
 
 ```sh
-  $ python manage.py runserver      # Use default 8080 port
+  $ python manage.py runserver
 ```
 
-Open browser at `http://0.0.0.0:8080`
+Open browser at `http://0.0.0.0:8000`
 
 
 ## License

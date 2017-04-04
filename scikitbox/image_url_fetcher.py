@@ -82,7 +82,7 @@ def fetch_urls(search_text):
 
 
 def main():
-	logger.debug = print # redirect to stdout
+	# logger.debug = print # redirect to stdout (py3)
 	if len(sys.argv) > 1:
 		image_query = " ".join(sys.argv[1:])
 	else:

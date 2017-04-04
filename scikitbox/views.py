@@ -9,8 +9,13 @@ from django.urls import reverse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods
 
-import scikitbox.image_url_fetcher as iuf
-import scikitbox.trainertools as tt
+try:
+    import scikitbox.image_url_fetcher as iuf
+    import scikitbox.trainertools as tt
+except:
+    import image_url_fetcher as iuf
+    import trainertools as tt
+    
 
 logger = logging.getLogger(__name__)
 TEST_DIR = "./scikitbox/static/images/test/"
