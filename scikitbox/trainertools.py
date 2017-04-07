@@ -1,3 +1,4 @@
+from collections import defaultdict
 
 from PIL import Image, ImageFilter
 from sklearn import svm
@@ -109,8 +110,23 @@ def color_to_grayscale_directory(filepath):
 
 def normalize_directory(filepath, size):
     resize_directory(filepath,size)
-    color_to_grayscale_directory(filepath)
-    converted_paths = edge_detect_directory(filepath)
+    converted_paths = color_to_grayscale_directory(filepath)
+    # converted_paths = edge_detect_directory(filepath)
+
+    #instead of edge_detect, need to have whole number filled in,
+    # try startegy below:
+    #http://stackoverflow.com/questions/9319767/image-outline-using-python-pil
+
+# 4
+# down vote
+# If your object and background have fairly well contrast
+#
+# from PIL import Image
+# image = Image.open(your_image_file)
+# mask=image.convert("L")
+# th=150 # the value has to be adjusted for an image of interest
+# mask = mask.point(lambda i: i < th and 255)
+# mask.save(file_where_to_save_result)
     return converted_paths
 
 # def grayscale_to_edge_detection(image_filepath):
@@ -139,34 +155,6 @@ def edge_detect_directory(filepath):
     print("converted %d images from grayscale to edge detection in %s" % \
         ((len(img_paths)),filepath))
     return img_paths
-
-def save_images_to_db(image_dir,image_type):
-    mongo = db.get_bot()
-    image_paths = collect_images(image_dir)
-    saves = 0
-    print('[ ] saving to mongodb ')
-    for image_path in image_paths:
-        saves += mongo.save_image(image_path,image_type)
-        print('.',)
-    print('\nsaved %d images to database' % saves)
-
-def load_images_from_db(image_type,destination_directory):
-    mongo = db.get_bot()
-    results = mongo.get_imagetypes(image_type)
-    try:
-        os.makedirs(destination_directory)
-    except OSError: #directory exists
-        pass
-    os.path.dirname(destination_directory)
-    for res in results:
-        try:
-            path = os.path.join(destination_directory,res['filename'])
-            fil = open(path,'wb')
-            fil.write(res['binary'])
-            fil.close()
-        except IOError as e:
-            print(e)
-    print('loaded %d results from db' % len(results))
 
 
 def train_classifier(pos_dir,neg_dir):
@@ -201,4 +189,39 @@ def test_classifier_on_single(clf,filepath): # returns (class,distance)
     distance_to_hyperplane = clf.decision_function(features)
     return (prediction,distance_to_hyperplane)
 
+def load_image( infilename ) :
+    img = Image.open( infilename )
+    img.load()
+    data = np.asarray( img, dtype="float32" )
+    return data
 
+
+KERAS_MODEL = None
+
+def test_mlp_mnist_classifier_on_single(filepath):
+    global KERAS_MODEL
+    #keras
+    #tensorflow
+    #h5py
+    from keras.models import load_model
+
+    im = load_image(filepath)
+    im /= 255
+
+    def black_white_inverter(pixel_val):
+        return abs(pixel_val - 1.0)
+
+    vfunc = np.vectorize(black_white_inverter)
+    single_example = np.array([vfunc(im.ravel())]) # pass in list of images for multiple batches
+
+    if not KERAS_MODEL:
+        KERAS_MODEL = load_model('myModel.h5')
+    prediction = KERAS_MODEL.predict(single_example) # (1,1) array cause only 1 data passed in
+
+    predictions_dict = defaultdict(list)
+    predictions_dict['max_index'] = np.argmax(prediction[0])
+    for idx, confidence in enumerate(prediction[0]):
+            predictions_dict['predictions'].\
+                append("{} : {:5f}".format(confidence, confidence))
+
+    return predictions_dict

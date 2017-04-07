@@ -71,7 +71,7 @@ def uploadSingle(request):
         norm_fil = open(ntest_path,"wb")
         norm_fil.write(data)
         norm_fil.close()
-        tt.normalize_directory(NTEST_DIR, (100, 100))
+        tt.normalize_directory(NTEST_DIR, (28, 28))
 
         response = HttpResponse("file uploaded successfully")
         response.__setitem__("content-type","text/text")
@@ -135,12 +135,7 @@ to the classifier_type parameter'''
     return render(request, 'scikitbox/view_images.html', template_dict)
 
 def normalizeTraining(request):
-    '''normalizes the images inside the training folders by the following:
-     resizing them to a size of 100x100, converting them to grayscale, and
-     then applying an edge detection filter to make it easier for the
-     svm to pick out useable pixel featuers'''
-
-    size = (100,100)
+    size = (28,28)
     base_dir = './scikitbox/static/images/training/'
 
     tt.normalize_directory(base_dir + 'pos/', size)
@@ -166,29 +161,37 @@ def matchTestGallery(request):
     training_base = './scikitbox/static/images/training/'
     pos_dir = training_base +'pos/'
     neg_dir = training_base +'neg/'
-    clf = tt.train_classifier(pos_dir,neg_dir)
     testnorm_dir = "./scikitbox/static/images/test_normalized/"
     test_dir = "./scikitbox/static/images/test/"
 
-    test_images = tt.collect_images(testnorm_dir)
-    clf_results = [] #("positive",np.array)
-    for image in test_images:
+    test_images = tt.collect_images(pos_dir)
+    clf_results = []
+    import ipdb; ipdb.sset_trace();
+    for img_path in test_images:
         try:
-            result = tt.test_classifier_on_single(clf,image)
+            result = tt.test_mlp_mnist_classifier_on_single(img_path)
             clf_results.append(result)
         except ValueError as e:
-            logger.debug(image + "   " + str(e))
+            logger.debug(img_path + "   " + str(e))
 
     #Get static paths
-    normalized_test_urls = static_url_collect(testnorm_dir)
-    test_urls = static_url_collect(test_dir)
+    # normalized_test_urls = static_url_collect(testnorm_dir)
+    # test_urls = static_url_collect(test_dir)
+    pos_urls = static_url_collect(pos_dir)
     image_clf_results = []
 
-    for i in range(len(normalized_test_urls)):
-        image_clf_results.append({"test_url":test_urls[i],
-                            "normalized_url":normalized_test_urls[i],
-                            "clf_result":clf_results[i][0],
-                            "clf_distance":clf_results[i][1]})
+
+    for i in range(len(pos_urls)):
+        image_clf_results.append({"test_url":pos_urls[i],
+                            # "normalized_url":normalized_test_urls[i],
+                            "clf_result":clf_results[i]['max_index'],
+                            "clf_predictions":clf_results[i]['predictions']})
+
+    # for i in range(len(normalized_test_urls)):
+    #     image_clf_results.append({"test_url":test_urls[i],
+    #                         "normalized_url":normalized_test_urls[i],
+    #                         "clf_result":clf_results[i][0],
+    #                         "clf_distance":clf_results[i][1]})
 
 
     template_dict = { 'image_clf_results' : image_clf_results }

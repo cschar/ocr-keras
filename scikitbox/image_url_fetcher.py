@@ -70,12 +70,12 @@ def write_files(urls,directory="images/"):
 
 def fetch_urls(search_text):
 	urls = []
+	size = 'medium'
+	for start in [1,11,21,31,41]:
 
-	for i in range(1,6):
-		# for size in ['large','medium']:
-		for size in ['medium']:
-			json = fetch_image_json(search_text,image_size=size, start_index=i)
-			urls += parse_images_urls(json)
+		json = fetch_image_json(search_text,image_size=size, start_index=start)
+		urls += parse_images_urls(json)
+
 	
 
 	return urls
