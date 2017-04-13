@@ -33,6 +33,8 @@ def get_rgb_feature_list(pil_image):
         return ret
 
 def collect_images(filepath):
+    if filepath[-1] != '/':
+        filepath += '/'
     extensions = ['jpg', 'JPG', 'png', 'PNG']
     images = []
     for ext in extensions:
@@ -113,31 +115,22 @@ def normalize_directory(filepath, size):
     converted_paths = color_to_grayscale_directory(filepath)
     # converted_paths = edge_detect_directory(filepath)
 
-    #instead of edge_detect, need to have whole number filled in,
-    # try startegy below:
-    #http://stackoverflow.com/questions/9319767/image-outline-using-python-pil
-
-# 4
-# down vote
-# If your object and background have fairly well contrast
-#
-# from PIL import Image
-# image = Image.open(your_image_file)
-# mask=image.convert("L")
-# th=150 # the value has to be adjusted for an image of interest
-# mask = mask.point(lambda i: i < th and 255)
-# mask.save(file_where_to_save_result)
     return converted_paths
 
-# def grayscale_to_edge_detection(image_filepath):
-# 	from skimage import data,io,filter
-# 	img = Image.open(image_filepath)
-# 	size = img.size
-# 	img_array = np.array(img.getdata())
-# 	img_array = np.resize(img_array,size)
-# 	img_array = img_array.astype(np.uint8)
-# 	edges = filter.sobel(img_array)
-# 	io.imsave(image_filepath+"_edge.jpg",edges)
+
+def write_threshold_mask(image_filepath, threshold=None):
+    # turn all pixels UNDER threshold to 255
+    # multiple calls create an invert effect
+    #http://stackoverflow.com/questions/9319767/image-outline-using-python-pil
+    th = threshold or 150
+
+    image = Image.open(image_filepath)
+    mask=image.convert("L")
+     # the value has to be adjusted for an image of interest
+    mask = mask.point(lambda i: i < th and 255)
+    mask.save(image_filepath)
+    image.close()
+    mask.close()
 
 def write_edge_detect(image_filepath,destination_filepath=None):
     if destination_filepath == None:
@@ -195,6 +188,9 @@ def load_image( infilename ) :
     data = np.asarray( img, dtype="float32" )
     return data
 
+def save_image( npdata, outfilename ) :
+    img = Image.fromarray( np.asarray( np.clip(npdata,0,255), dtype="uint8"), "L" )
+    img.save( outfilename )
 
 KERAS_MODEL = None
 
@@ -208,20 +204,21 @@ def test_mlp_mnist_classifier_on_single(filepath):
     im = load_image(filepath)
     im /= 255
 
-    def black_white_inverter(pixel_val):
-        return abs(pixel_val - 1.0)
-
-    vfunc = np.vectorize(black_white_inverter)
-    single_example = np.array([vfunc(im.ravel())]) # pass in list of images for multiple batches
+    # def black_white_inverter(pixel_val):
+    #     return abs(pixel_val - 1.0)
+    #
+    # vfunc = np.vectorize(black_white_inverter)
+    # im = vfunc(im)
+    single_example = np.array([im.ravel()]) # pass in list of images for multiple batches
 
     if not KERAS_MODEL:
-        KERAS_MODEL = load_model('myModel.h5')
+        KERAS_MODEL = load_model('mnist-model-20-iterations.h5')
     prediction = KERAS_MODEL.predict(single_example) # (1,1) array cause only 1 data passed in
 
-    predictions_dict = defaultdict(list)
-    predictions_dict['max_index'] = np.argmax(prediction[0])
+    results = defaultdict(list)
+    results['max_index'] = np.argmax(prediction[0])
     for idx, confidence in enumerate(prediction[0]):
-            predictions_dict['predictions'].\
-                append("{} : {:5f}".format(confidence, confidence))
+        confidence_string = "{} : {:5f}".format(idx, confidence)
+        results['predictions'].append(confidence_string)
 
-    return predictions_dict
+    return results

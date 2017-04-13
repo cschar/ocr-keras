@@ -1,12 +1,16 @@
+import base64
+from datetime import datetime
 import os
 import logging
 from glob import glob
 from multiprocessing import Process
 
-from django.http import HttpResponse, Http404
+
+from django.http import HttpResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 try:
@@ -35,7 +39,7 @@ def static_url_collect(directory_path):
     images = ["../"+(image.split("./scikitbox/")[1]) for image in images]
     return images
 
-
+@never_cache
 def index(request):
     '''index of the app giving a dashboard overview of available
     options to user'''
@@ -48,15 +52,11 @@ def index(request):
     template_dict = {'test_images':test_images,
                      'pos_image_count':len(pos_images),
                      'neg_image_count':len(neg_images),
-                     'alert_message': None}
+                     }
     return render(request,'scikitbox/main.html', template_dict)
 
 
-
-
 def uploadSingle(request):
-    '''receives an uploaded image from user and save it to the
-    test folder, aswell as normalizing it to a test_normalized folder'''
     if request.method == "POST":
         uploaded_image = request.FILES['upload']
         name = uploaded_image.name
@@ -73,9 +73,7 @@ def uploadSingle(request):
         norm_fil.close()
         tt.normalize_directory(NTEST_DIR, (28, 28))
 
-        response = HttpResponse("file uploaded successfully")
-        response.__setitem__("content-type","text/text")
-        return response
+        return redirect('index')
 
 def clear(request,folder_target):
     ''' clears any .jpgs or .pngs in the folder_target directory'''
@@ -93,6 +91,7 @@ def clear(request,folder_target):
 
 @require_http_methods(['POST'])
 def setupTraining(request):
+    #TODO: normalize at this step in case user forgets to after
     ''' uses google image api to fill up either a positive or negative
     training folder with samples for later use in the svm classifier'''
     classifier = request.POST['classifier']
@@ -134,6 +133,16 @@ to the classifier_type parameter'''
 
     return render(request, 'scikitbox/view_images.html', template_dict)
 
+
+def invert(request):
+    img_type = request.GET['type']
+    base_dir = './scikitbox/static/images/training/' + img_type
+    img_paths = tt.collect_images(base_dir)
+
+    for img_path in img_paths:
+        tt.write_threshold_mask(img_path)
+    return redirect('index')
+
 def normalizeTraining(request):
     size = (28,28)
     base_dir = './scikitbox/static/images/training/'
@@ -151,22 +160,23 @@ def normalizeTraining(request):
                                                 len(neg_convert_paths))})
 
 
-def matchTestGallery(request):
-    '''trains a svm classifier using the image data stored in the
-    training folders. With the classifier, it inputs all the normalized
-    user images as test data. The resulting matches are classified
-    either as "postive" or "negative" and a resulting distance to the
-    classifier divider or 'hyperplane' is appended for each user image
-    test.'''
+def match(request):
+    match_type = request.GET['type']
     training_base = './scikitbox/static/images/training/'
     pos_dir = training_base +'pos/'
     neg_dir = training_base +'neg/'
     testnorm_dir = "./scikitbox/static/images/test_normalized/"
-    test_dir = "./scikitbox/static/images/test/"
 
-    test_images = tt.collect_images(pos_dir)
+    if match_type == 'test':
+        dir = testnorm_dir
+    elif match_type == 'pos':
+        dir = pos_dir
+    else:
+        dir = neg_dir
+
+
+    test_images = tt.collect_images(dir)
     clf_results = []
-    import ipdb; ipdb.sset_trace();
     for img_path in test_images:
         try:
             result = tt.test_mlp_mnist_classifier_on_single(img_path)
@@ -174,26 +184,38 @@ def matchTestGallery(request):
         except ValueError as e:
             logger.debug(img_path + "   " + str(e))
 
-    #Get static paths
-    # normalized_test_urls = static_url_collect(testnorm_dir)
-    # test_urls = static_url_collect(test_dir)
-    pos_urls = static_url_collect(pos_dir)
+    img_urls = static_url_collect(dir)
     image_clf_results = []
 
+    for i in range(len(img_urls)):
+        image_clf_results.append(
+                {"test_url":img_urls[i],
+                "data":clf_results[i],
+                 "bleb": "blebb",
+                })
 
-    for i in range(len(pos_urls)):
-        image_clf_results.append({"test_url":pos_urls[i],
-                            # "normalized_url":normalized_test_urls[i],
-                            "clf_result":clf_results[i]['max_index'],
-                            "clf_predictions":clf_results[i]['predictions']})
-
-    # for i in range(len(normalized_test_urls)):
-    #     image_clf_results.append({"test_url":test_urls[i],
-    #                         "normalized_url":normalized_test_urls[i],
-    #                         "clf_result":clf_results[i][0],
-    #                         "clf_distance":clf_results[i][1]})
+    return render(request,'scikitbox/match.html',
+                  { 'image_clf_results' : image_clf_results })
 
 
-    template_dict = { 'image_clf_results' : image_clf_results }
-    return render(request,'scikitbox/match.html', template_dict)
+@csrf_exempt
+def save_image(request):
+    format, imgstr = request.POST['imgBase64'].split(';base64,')
+    ext = format.split('/')[-1]
+    data = base64.b64decode(imgstr)
 
+    file_name = 'upload{}.{}'.format(datetime.now().isoformat(), ext)
+    file_path = TEST_DIR + file_name
+    with open(file_path, 'wb') as f:
+        f.write(data)
+
+    # TODO use media folder and Model.FileUpload
+    all_urls = static_url_collect(TEST_DIR)
+    file_url = [x for x in all_urls if file_name in x][0]
+
+    ntest_path = os.path.join(NTEST_DIR, file_name)
+    with open(ntest_path,"wb") as norm_fil:
+        norm_fil.write(data)
+    tt.normalize_directory(NTEST_DIR, (28, 28))
+
+    return JsonResponse(data={'url': str(file_url)})

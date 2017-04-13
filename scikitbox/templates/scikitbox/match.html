@@ -5,17 +5,19 @@
 
 <div class="container-fluid wrapper">
 	{% for result in image_clf_results %}
-	{% if result.clf_result == "positive" %}
-		<div class="match-result positive">	
-	{% else %}
-		<div class="match-result negative">	
-	{% endif %}
+    <div class="match-result positive">
+
 		Normalized/Original: 
 		<img src={{result.test_url}} align='right' width='100' height='100'>
-		<img src={{result.normalized_url}} align='right' width='100' height='100'>
 		<br/>
-		Image classified as <h2>  {{result.clf_result}}</h2>
-        with predictions:  {{result.predictions}}
+		Image classified as <h2>  {{result.data.max_index }}</h2>
+        with predictions:
+        <div style="display:block"
+        {% for p in result.data.predictions %}
+            {{ p }} <br>
+        {% endfor %}
+        </div>
+
 	</div>
 	{% endfor %}
     <a href="{% url "index" %}"> Back </a>
