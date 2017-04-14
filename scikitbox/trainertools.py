@@ -1,13 +1,11 @@
 from collections import defaultdict
 
 from PIL import Image, ImageFilter
-from sklearn import svm
+
 from numpy import array
-from scipy import ndimage
 import numpy as np
 from glob import glob
 import unittest,os,time
-# from skimage import feature
 try:
     from urllib import request as urllib2
 except:
@@ -149,38 +147,6 @@ def edge_detect_directory(filepath):
         ((len(img_paths)),filepath))
     return img_paths
 
-
-def train_classifier(pos_dir,neg_dir):
-    start = time.time()
-    print("[ ] Beginning to train svm classifier.")
-    pfeatures = get_feature_list_from_directory(pos_dir)
-    current_time = time.time() - start
-    print("[ ] Done setting up postives (samples: %d, feautures: %d). Time: %d" \
-        % (len(pfeatures), len(pfeatures[0]), current_time))
-    nfeatures = get_feature_list_from_directory(neg_dir)
-    current_time = time.time() - start
-    print("[ ] Done setting up negatives (samples: %d, features: %d). Time: %d" \
-         % (len(nfeatures), len(nfeatures[0]), current_time))
-
-    X = pfeatures + nfeatures
-    y = ["positive"]*len(pfeatures) + ["negative"]*len(nfeatures)
-    print("[ ] Training with (samplesize,featuresize):(%d , %d )" %\
-            (len(pfeatures)+len(nfeatures), len(pfeatures[0])))
-
-    clf = svm.SVC(kernel='linear',C=100, cache_size=1000)
-    clf.fit(X, y)
-    current_time = time.time() - start
-    print("[ ] Done training in: %d seconds" % (current_time))
-    return clf
-
-def test_classifier_on_single(clf,filepath): # returns (class,distance)
-    img = Image.open(filepath)
-    print(len(img.getdata()))
-    features = get_rgb_feature_list(img)
-    img.close()
-    prediction = clf.predict(features)
-    distance_to_hyperplane = clf.decision_function(features)
-    return (prediction,distance_to_hyperplane)
 
 def load_image( infilename ) :
     img = Image.open( infilename )
