@@ -1,5 +1,5 @@
 nomkl
-pillow==3.4.1
+pillow==4.1.0
 numpy
 scipy
 keras
