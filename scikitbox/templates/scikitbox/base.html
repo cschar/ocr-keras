@@ -1,0 +1,16 @@
+{% load staticfiles %}
+
+<html>
+<head>
+  <link rel=icon href=/static/favicon.ico>
+  <link rel="stylesheet" type="text/css" href="{% static 'scikitbox/main.css' %}" />
+  <link rel="stylesheet" type="text/css" href="{% static 'scikitbox/bootstrap.css' %}" />
+</head>
+<body>
+
+<div class="container-fluid wrapper">
+{% block content %}{% endblock %}
+</div>
+
+</body>
+</html>

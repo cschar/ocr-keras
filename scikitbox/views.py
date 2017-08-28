@@ -5,7 +5,8 @@ import logging
 from glob import glob
 from multiprocessing import Process
 
-
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
@@ -20,6 +21,8 @@ except:
     import image_url_fetcher as iuf
     import trainertools as tt
     
+from django.views import View
+
 
 logger = logging.getLogger(__name__)
 TEST_DIR = "./scikitbox/static/images/test/"
@@ -39,12 +42,34 @@ def static_url_collect(directory_path):
     images = ["../"+(image.split("./scikitbox/")[1]) for image in images]
     return images
 
+
+class Login(View):
+
+    def get(self, request):
+        logger.info('Loading loggin page')
+        logger.error('Loading loggin page1')
+        logger.debug('Loading loggin page2')
+        return render(request,'scikitbox/login.html')
+
+    def post(self, request):
+        logger.info("attempted to login w/ {}".format(request.POST))
+        user = authenticate(username=request.POST['username'],
+                            password=request.POST['password'])
+
+        if user:
+            login(request, user)
+            return redirect('index')
+        else:
+            return render(request,'scikitbox/login.html')
+
+
+
+@login_required
 @never_cache
 def index(request):
     '''index of the app giving a dashboard overview of available
     options to user'''
 
-    logger.error('hey')
     test_images = static_url_collect(TEST_DIR)
     pos_images = static_url_collect(POS_DIR)
     neg_images = static_url_collect(NEG_DIR)
@@ -55,7 +80,7 @@ def index(request):
                      }
     return render(request,'scikitbox/main.html', template_dict)
 
-
+@login_required
 def uploadSingle(request):
     if request.method == "POST":
         uploaded_image = request.FILES['upload']
@@ -75,6 +100,7 @@ def uploadSingle(request):
 
         return redirect('index')
 
+@login_required
 def clear(request,folder_target):
     ''' clears any .jpgs or .pngs in the folder_target directory'''
     if folder_target == 'Test':
@@ -89,6 +115,7 @@ def clear(request,folder_target):
     logger.debug("removed %s images from %s", removed, folder_target)
     return redirect(reverse('index'))
 
+@login_required
 @require_http_methods(['POST'])
 def setupTraining(request):
     #TODO: normalize at this step in case user forgets to after
@@ -116,6 +143,7 @@ def setupTraining(request):
                     'images':fetched_img_urls}
     return render(request,'scikitbox/search_results.html', template_dict)
 
+@login_required
 @never_cache
 def viewTraining(request,classifier_type): #positive or negative
     '''displays the current images in the training folder corresponding
@@ -133,7 +161,7 @@ to the classifier_type parameter'''
 
     return render(request, 'scikitbox/view_images.html', template_dict)
 
-
+@login_required
 def invert(request):
     img_type = request.GET['type']
     base_dir = './scikitbox/static/images/training/' + img_type
@@ -143,6 +171,7 @@ def invert(request):
         tt.write_threshold_mask(img_path)
     return redirect('index')
 
+@login_required
 def normalizeTraining(request):
     size = (28,28)
     base_dir = './scikitbox/static/images/training/'
@@ -159,7 +188,7 @@ def normalizeTraining(request):
                    'count': '{} pos, {}'.format(len(pos_convert_paths),
                                                 len(neg_convert_paths))})
 
-
+@login_required
 def match(request):
     match_type = request.GET['type']
     training_base = './scikitbox/static/images/training/'
@@ -198,6 +227,7 @@ def match(request):
                   { 'image_clf_results' : image_clf_results })
 
 
+@login_required
 @csrf_exempt
 def save_image(request):
     format, imgstr = request.POST['imgBase64'].split(';base64,')

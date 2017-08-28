@@ -1,14 +1,8 @@
+{% extends "scikitbox/base.html" %}
 {% load staticfiles %}
 
-<html>
-<head>
-<link rel="stylesheet" type="text/css" href="{% static 'scikitbox/main.css' %}" />
-<link rel="stylesheet" type="text/css" href="{% static 'scikitbox/bootstrap.css' %}" />
-</head>
-<body>
 
-<div class="container-fluid wrapper">
-
+{% block content %}
 <div class="row blue1">
 	<div class="col-xs-12">	
 		<h4> Test Gallery </h4>
@@ -125,5 +119,4 @@ function makeSketchpad(){
 }
 
 </script>
-</body>
-</html>
+{% endblock %}

@@ -1,6 +1,6 @@
 from django.conf.urls import include, url
 from django.contrib import admin
-import scikitbox
+from scikitbox.views import Login
 
 urlpatterns = [
     # Examples:
@@ -10,4 +10,5 @@ urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^box/',include('scikitbox.urls')),
     url(r'^$',include('scikitbox.urls')),
+    url(r'^login$', Login.as_view(), name='login'),
 ]

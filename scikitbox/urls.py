@@ -5,6 +5,7 @@ from scikitbox import views
 urlpatterns = [
     
     url(r'^$', views.index, name='index'),
+
     url(r'^uploadSingle',views.uploadSingle, name='upload_single'),
     url(r'^clear(?P<folder_target>\w+)',views.clear, name='clear'),
     url(r'^setupTraining',views.setupTraining, name='setup'),

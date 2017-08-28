@@ -6,7 +6,8 @@ staticfiles
 *.png
 
 #logs
-heroku_django
+db.sqlite3
+debug.log
 
 #pycharm
 .idea

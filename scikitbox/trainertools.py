@@ -11,10 +11,7 @@ try:
 except:
     import urllib2
 
-try:
-    import scikitbox.db
-except:
-    import db
+
 
 def get_rgb_feature_list(pil_image):
     '''ignore alpha channel if present'''
