@@ -7,6 +7,7 @@ from multiprocessing import Process
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 from django.http import HttpResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
@@ -239,6 +240,11 @@ def save_image(request):
     file_name = 'upload{}.{}'.format(datetime.now().isoformat(), ext)
     file_path = TEST_DIR + file_name
     with open(file_path, 'wb') as f:
+        f.write(data)
+
+    static_dir= settings.BASE_DIR + '/' + settings.STATIC_ROOT + "/images/test/"
+    file_path2 = static_dir + file_name
+    with open(file_path2, 'wb') as f:
         f.write(data)
 
     # TODO use media folder and Model.FileUpload
