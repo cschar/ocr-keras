@@ -9,6 +9,15 @@
 <body>
 
 <div class="container-fluid wrapper">
+<div id="loginlogout">
+  <span style="color:white">{{ request.user.username }} ||||
+{%  if not perms.scikitbox.image_rights %}
+     Base permissions
+  {%  endif %}
+   </span>
+  <a href="/login"> login</a>
+<a href="/logout"> logout</a>
+</div>
 {% block content %}{% endblock %}
 </div>
 

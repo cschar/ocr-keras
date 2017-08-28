@@ -5,7 +5,7 @@ import logging
 from glob import glob
 from multiprocessing import Process
 
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
@@ -43,12 +43,14 @@ def static_url_collect(directory_path):
     return images
 
 
+class Logout(View):
+    def get(self, request):
+        logout(request)
+        return redirect('index')
+
 class Login(View):
 
     def get(self, request):
-        logger.info('Loading loggin page')
-        logger.error('Loading loggin page1')
-        logger.debug('Loading loggin page2')
         return render(request,'scikitbox/login.html')
 
     def post(self, request):

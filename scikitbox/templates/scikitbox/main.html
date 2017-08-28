@@ -12,18 +12,23 @@
 			<img src={{image_url}} height='50' width='50' >
 		{% endfor %}
 		</div>
+    {%  if perms.scikitbox.image_rights %}
 		<form action="/box/uploadSingle" method="post" enctype="multipart/form-data">
 		    Select a file: <input type="file" name="upload" /><br/>
 		    <input type="submit" value="upload to gallery" />
 		</form>
 		<a href="/box/clearTest"> clear test gallery </a>
+
+    {%  endif %}
 			
 	</div>
  </div> <!-- end row -->
 
  <div class="row green1">
 	<div class="col-xs-6">
-		<h4> Collect training data </h4>
+		{%  if perms.scikitbox.image_rights %}
+
+    <h4> Collect training data </h4>
 		
 		<form action='/box/setupTraining' method="POST">
 		  Collect Images with keywords : <input type="text" name="training_keywords" />
@@ -41,7 +46,10 @@
 			<a href="/box/viewNegative"> view neg</a> <br/>
 			<a href="/box/clearPositive"> clear neg</a>
 		</div>
+
+    {%  endif %}
 	</div>
+
 	<div class="col-xs-6">
         <h4> Draw </h4>
         <div>
@@ -56,6 +64,8 @@
 
  <div class="row green-light">
 	<div class="col-xs-6">
+    {%  if perms.scikitbox.image_rights %}
+
 		<h4> Normalize the Pos/Neg data </h4>
 		<form action='/box/normalizeTraining' method="POST">
 		  <input type="submit" value="normalize" />
@@ -63,6 +73,7 @@
     <p> MNIST classifier is trained for white digit on black background</p>
     <a href="/box/invert?type=pos"> invert color for pos </a> <br>
     <a href="/box/invert?type=neg"> invert color for neg </a> <br>
+     {%  endif %}
 	</div>
 	<div class="col-xs-6 earthy" >
 		<h4> Match against data (Normalize first)</h4>
